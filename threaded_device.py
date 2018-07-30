@@ -1,3 +1,4 @@
+
 """
 """
 
@@ -13,7 +14,7 @@ def byte_debug_string(bytestring):
         " [" + "".join(map(chr, bytestring)) + "]")
 
 
-class threaded_device(threading.Thread):
+class ThreadedDevice(threading.Thread):
     """
     """
 
@@ -26,6 +27,17 @@ class threaded_device(threading.Thread):
 
         self.port = port
         self.baudrate = baudrate
+
+    def __str__(self):
+
+        if hasattr(self, "device"):
+            if self.device.is_open:
+                return "Connected serial device at port " + self.port
+            else:
+                return "Disconnected serial device at port " + self.port
+
+        else:
+            return "Unbound serial device"
 
     def connect(self, timeout):
         """
@@ -131,7 +143,7 @@ class threaded_device(threading.Thread):
         """
         """
 
-        while self.loop(self.exit_request) and self.main_alive():
+        while self.loop() and self.main_alive() and not self.exit_request:
             pass
 
         self.done = True
