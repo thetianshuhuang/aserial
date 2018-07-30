@@ -1,19 +1,26 @@
 
-"""
+"""Serial device as a python object
+
+Attributes
+----------
+PORT_ID_CACHE : dict
+    Cache of PIDs for each connected serial device
 """
 
 import time
 import logging
-from . import arduino
+from .checksum_device import ChecksumDevice
 from serial.tools import list_ports
 
 
 PORT_ID_CACHE = {}
 
 
-class ArduinoGetPid(arduino.Arduino):
+class SerialGetPid(ChecksumDevice):
+    """Helper class to get the PID of a device and terminate after receipt"""
 
     def loop(self):
+        """Loop function (overwrites LoopThreading's ``loop`` function"""
 
         self.send(self, 0x00)
 
@@ -24,6 +31,13 @@ class ArduinoGetPid(arduino.Arduino):
 
 
 def cache_done(devices):
+    """Check if cache assembly has completed
+
+    Returns
+    -------
+    bool
+        ``True`` if all ``SerialGetPid`` objects have finished
+    """
 
     for device in devices:
         if device.done:
@@ -32,12 +46,26 @@ def cache_done(devices):
 
 
 def refresh_cache(baudrate=115200, timeout=5):
+    """Refresh the PID cache
+
+    Parameters
+    ----------
+    baudrate : int
+        Baudrate of the serial devices to connect
+    timeout : float
+        Time in seconds to try connecting before giving up
+
+    Returns
+    -------
+    dict
+        Port PID cache, once assembled
+    """
 
     devices = {}
     PORT_ID_CACHE = {}
 
     for port in list_ports.comports():
-        devices[port] = ArduinoGetPid(port, baudrate=baudrate, timeout=timeout)
+        devices[port] = SerialGetPid(port, baudrate=baudrate, timeout=timeout)
 
     while not cache_done:
         # Sleep 10ms
@@ -55,7 +83,16 @@ def refresh_cache(baudrate=115200, timeout=5):
 refresh_cache()
 
 
-class ArduinoObject(arduino.Arduino):
+class SerialObject(ChecksumDevice):
+    """Serial device as a python object
+
+    Parameters
+    ----------
+    baudrate : int
+        Baudrate of the object
+    timeout : float
+        Timeout for connection attempts
+    """
 
     def __init__(self, baudrate=115200, timeout=5):
 

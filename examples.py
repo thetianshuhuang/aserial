@@ -1,4 +1,7 @@
 
+"""Module examples"""
+
+
 import logging
 from .arduino import ArduinoObject
 
