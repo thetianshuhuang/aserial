@@ -1,2 +1,2 @@
-# pythonic-arduino
-Library to use an Arduino as a pythonic object.
+# Async Serial
+Asynchronous connection between a serial device and a python host to facilitate "function calls"
